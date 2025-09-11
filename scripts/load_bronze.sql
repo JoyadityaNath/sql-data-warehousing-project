@@ -3,6 +3,9 @@
 -- Step 1: Truncate table to ensure a clean load
 -- Step 2: Bulk insert data from source CSV file
 ----------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE Bronze.load_bronze AS
+BEGIN
 TRUNCATE TABLE Bronze.crm_cust_info;
 
 BULK INSERT Bronze.crm_cust_info
@@ -77,3 +80,4 @@ WITH (
 	FIELDTERMINATOR = ',', 
 	TABLOCK
 );
+END
