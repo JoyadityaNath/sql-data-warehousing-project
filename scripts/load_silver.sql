@@ -4,7 +4,12 @@ CLEAN AND READY TO LOAD Bronze.crm_cust_info TABLE
 ===============================================================
 */
 USE DataWarehouse
-TRUNCATE Silver.crm_cust_info
+
+-- Cleaning customer info: keep latest record per cst_id, 
+-- trim names, standardize marital status and gender, 
+-- drop invalid IDs, load into Silver layer.
+TRUNCATE TABLE Silver.crm_cust_info;
+
 INSERT INTO Silver.crm_cust_info 
     (cst_id,
      cst_key,
@@ -35,10 +40,13 @@ FROM (
     FROM bronze.crm_cust_info
 ) t
 WHERE latest = 1 
-  AND cst_id IS NOT NULL
+  AND cst_id IS NOT NULL;
 
 
 
+-- Cleaning product info: derive category ID from prd_key, 
+-- trim product name, standardize product line, 
+-- fill missing costs, calculate end dates, load into Silver layer.
 TRUNCATE TABLE Silver.crm_prd_info;
 
 INSERT INTO Silver.crm_prd_info(
@@ -72,6 +80,9 @@ SELECT
 FROM bronze.crm_prd_info;
 
 
+
+-- Cleaning sales details: validate dates, recalculate sales if mismatched, 
+-- fix invalid prices, ensure consistency, load into Silver layer.
 TRUNCATE TABLE Silver.crm_sales_details;
 
 INSERT INTO Silver.crm_sales_details (
@@ -114,8 +125,11 @@ FROM Bronze.crm_sales_details;
 
 
 
-
+-- Cleaning ERP customer master: normalize IDs, 
+-- nullify future birthdates, standardize gender, 
+-- load into Silver layer.
 TRUNCATE TABLE Silver.erp_cust_az12;
+
 INSERT INTO Silver.erp_cust_az12(cid,bdate,gen)
 SELECT 
     CASE 
@@ -131,13 +145,15 @@ SELECT
         WHEN UPPER(TRIM(gen)) IN ('M', 'MALE') THEN 'Male'
         WHEN UPPER(TRIM(gen)) IN ('F', 'FEMALE') THEN 'Female'
     END AS gen
-
 FROM Bronze.erp_cust_az12;
 
 
 
-
+-- Cleaning ERP location data: standardize country names, 
+-- remove invalid entries, strip dashes from IDs, 
+-- load into Silver layer.
 TRUNCATE TABLE Silver.erp_loc_a101;
+
 INSERT INTO Silver.erp_loc_a101(cid,cntry)
 SELECT 
     REPLACE(cid, '-', '') AS cid,
@@ -148,3 +164,13 @@ SELECT
         ELSE cntry
     END AS cntry
 FROM Bronze.erp_loc_a101;
+
+
+
+-- Cleaning ERP product categories: load as-is from Bronze to Silver 
+-- for harmonized reference data.
+TRUNCATE TABLE Silver.erp_px_cat_g1v2;
+
+INSERT INTO Silver.erp_px_cat_g1v2(id,cat,subcat,maintenance)
+SELECT id,cat,subcat,maintenance 
+FROM Bronze.erp_px_cat_g1v2;
