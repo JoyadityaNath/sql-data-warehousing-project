@@ -29,7 +29,8 @@ IF OBJECT_ID('Silver.crm_prd_info','U') IS NOT NULL
 	DROP TABLE Silver.crm_prd_info;
 
 CREATE TABLE Silver.crm_prd_info( 
-	prd_id INT,               -- Product ID (numeric identifier)
+	prd_id INT,-- Product ID (numeric identifier)
+	cat_id NVARCHAR(50),
 	prd_key NVARCHAR(50),     -- Product Key (business key from source)
 	nm_prd NVARCHAR(50),      -- Product Name
 	prd_cost INT,             -- Product Cost
@@ -51,9 +52,9 @@ CREATE TABLE Silver.crm_sales_details(
 	sls_ord_num NVARCHAR(50),   -- Sales Order Number
 	sls_prd_key NVARCHAR(50),   -- Product Key (FK to product master)
 	sls_cust_id INT,            -- Customer ID (FK to customer master)
-	sls_order_dt INT,           -- Order Date (stored as INT, e.g., YYYYMMDD)
-	sls_ship_dt INT,            -- Ship Date (stored as INT)
-	sls_due_dt INT,             -- Due Date (stored as INT)
+	sls_order_dt DATE,           -- Order Date (stored as INT, e.g., YYYYMMDD)
+	sls_ship_dt DATE,            -- Ship Date (stored as INT)
+	sls_due_dt DATE,             -- Due Date (stored as INT)
 	sls_sales INT,              -- Sales Amount
 	sls_quantity INT,           -- Quantity Sold
 	sls_price INT,               -- Unit Price
