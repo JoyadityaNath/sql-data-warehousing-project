@@ -3,6 +3,7 @@
 CLEAN AND READY TO LOAD Bronze.crm_cust_info TABLE
 ===============================================================
 */
+USE DataWarehouse
 TRUNCATE Silver.crm_cust_info
 INSERT INTO Silver.crm_cust_info 
     (cst_id,
@@ -34,16 +35,12 @@ FROM (
     FROM bronze.crm_cust_info
 ) t
 WHERE latest = 1 
-  AND cst_id IS NOT NULL;
+  AND cst_id IS NOT NULL
 
 
-/*
-===============================================================
-CLEAN AND READY TO LOAD Bronze.crm_prd_info TABLE
-===============================================================
-*/
 
 TRUNCATE TABLE Silver.crm_prd_info;
+
 INSERT INTO Silver.crm_prd_info(
     prd_id,
     cat_id,
@@ -73,3 +70,44 @@ SELECT
         ORDER BY prd_start_dt
     )) AS prd_end_dt
 FROM bronze.crm_prd_info;
+
+
+TRUNCATE TABLE Silver.crm_sales_details;
+
+INSERT INTO Silver.crm_sales_details (
+    sls_ord_num,
+    sls_prd_key,
+    sls_cust_id,
+    sls_order_dt,
+    sls_ship_dt,
+    sls_due_dt,
+    sls_sales,
+    sls_quantity,
+    sls_price
+)
+SELECT
+    sls_ord_num,
+    sls_prd_key,
+    sls_cust_id,
+    CASE 
+        WHEN LEN(sls_order_dt) != 8 OR sls_order_dt = 0 
+            THEN NULL
+        ELSE CAST(CAST(sls_order_dt AS VARCHAR) AS DATE)
+    END AS sls_order_dt,
+    CAST(CAST(sls_ship_dt AS VARCHAR) AS DATE) AS sls_ship_dt,
+    CAST(CAST(sls_due_dt AS VARCHAR) AS DATE) AS sls_due_dt,
+    CASE
+        WHEN sls_sales <= 0 
+             OR sls_sales IS NULL 
+             OR sls_sales != sls_quantity * ABS(sls_price) 
+            THEN ABS(sls_price) * sls_quantity
+        ELSE sls_sales
+    END AS sls_sales,
+    sls_quantity,
+    CASE
+        WHEN sls_price <= 0 
+             OR sls_price IS NULL 
+            THEN ABS(sls_sales) / NULLIF(sls_quantity, 0)
+        ELSE sls_price
+    END AS sls_price
+FROM Bronze.crm_sales_details;
