@@ -133,3 +133,18 @@ SELECT
     END AS gen
 
 FROM Bronze.erp_cust_az12;
+
+
+
+
+TRUNCATE TABLE Silver.erp_loc_a101;
+INSERT INTO Silver.erp_loc_a101(cid,cntry)
+SELECT 
+    REPLACE(cid, '-', '') AS cid,
+    CASE 
+        WHEN UPPER(TRIM(cntry)) IN ('DE', 'GERMANY') THEN 'Germany'
+        WHEN UPPER(TRIM(cntry)) IN ('US', 'USA', 'UNITED STATES') THEN 'United States'
+        WHEN cntry IN ('') THEN NULL
+        ELSE cntry
+    END AS cntry
+FROM Bronze.erp_loc_a101;
