@@ -193,8 +193,8 @@ SELECT
     DATEDIFF(MONTH, first_order, last_order) AS months_as_member,
     spent_by_customer,
     CASE 
-        WHEN DATEDIFF(MONTH, first_order, last_order) > 12 AND spent_by_customer > 5000 THEN 'VIP'
-        WHEN DATEDIFF(MONTH, first_order, last_order) > 12 AND spent_by_customer <= 5000 THEN 'Regular'
+        WHEN DATEDIFF(MONTH, first_order, last_order) >= 12 AND spent_by_customer > 5000 THEN 'VIP'
+        WHEN DATEDIFF(MONTH, first_order, last_order) >= 12 AND spent_by_customer <= 5000 THEN 'Regular'
         ELSE 'New'
     END AS Status
 FROM (
